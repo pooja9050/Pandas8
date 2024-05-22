@@ -30,37 +30,77 @@ def total_time(employees: pd.DataFrame) -> pd.DataFrame:
     return employees
 
 
-#511. Game Play Analysis I
+#2356. Number of Unique Subjects Taught by Each Teacher
 import pandas as pd
 
-def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
+def count_unique_subjects(teacher: pd.DataFrame) -> pd.DataFrame:
     mydictionary = {}
-    for i in range(len(activity)):
-        p_id = activity['player_id'][i]
-        e_date = activity['event_date'][i]
-        if p_id in mydictionary:
-            if e_date < mydictionary[p_id]:
-                mydictionary[p_id] = e_date
-        else:
-            mydictionary[p_id] = e_date
+    for i in range(len(teacher)):
+        t_id = teacher['teacher_id'][i]
+        sub_id = teacher['subject_id'][i]
+        if t_id not in mydictionary:
+            mydictionary[t_id] = set()  # Key as teacher_id and value as empty set
+        mydictionary[t_id].add(sub_id)
     
     result = []
     for key, value in mydictionary.items():
-        result.append([key, value])
+        result.append([key, len(value)])
     
-    return pd.DataFrame(result, columns=['player_id', 'first_login'])
+    return pd.DataFrame(result, columns=['teacher_id', 'cnt'])
 
-#Efficient way
+#Alternative
 import pandas as pd
 
-def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
-    df = activity.groupby(['player_id']) ['event_date'].min().reset_index()
-    return df.rename(columns = {'event_date': 'first_login'})
+def count_unique_subjects(teacher: pd.DataFrame) -> pd.DataFrame:
+    df = teacher.groupby(['teacher_id']) ['subject_id'].nunique().reset_index()
+    return df.rename(columns = {'subject_id':'cnt'})
 
+
+#596. Classes More Than 5 Students
+import pandas as pd
+
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    mydictionary = {}
+    for i in range (len(courses)):
+        subject = courses['class'][i]
+        if subject not in mydictionary:
+            mydictionary[subject] = 0
+        mydictionary[subject] += 1
+    result = []
+    for key,value in mydictionary.items():
+        if value >= 5:
+            result.append([key])
+    return pd.DataFrame(result, columns = ['class'])
+
+
+#Short sol
+import pandas as pd
+
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    df = courses.groupby(['class']).size().reset_index(name = 'count')
+    df = df[df['count'] >= 5]
+    return df[['class']]
 
 import pandas as pd
 
-def game_analysis(activity: pd.DataFrame) -> pd.DataFrame:
-    df = activity.sort_values(by=['event_date']).drop_duplicates(['player_id'])
-    return df[['player_id', 'event_date']].rename(columns = {'event_date':'first_login'})
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    df = courses.groupby(['class'])['student'].nunique().reset_index(name = 'count')
+    df = df[df['count'] >= 5]
+    return df[['class']]
+
+#Instead of nunique , we can use count()
+import pandas as pd
+
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    df = courses.groupby(['class']).nunique().reset_index()
+    df = df[df['student'] >= 5]
+    return df[['class']]
+
+import pandas as pd
+
+def find_classes(courses: pd.DataFrame) -> pd.DataFrame:
+    df = courses.groupby(['class']).count().reset_index()
+    df = df[df['student'] >= 5]
+    return df[['class']]
+
 
